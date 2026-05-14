@@ -12,7 +12,7 @@ NoBavel is a GIS-style construction coordination platform built around a live sp
 
 **Pilot context.** v0.1 targets **mid-rise residential (5–15 floors)** in **Israel**, with **Hebrew (RTL) and English** at launch; Arabic deferred to a near-term post-MVP release with RTL-ready architecture from day one.
 
-The MVP delivers seven tightly-scoped capabilities: a shareable-link invite system, a trade-focused "what's changed since last time" home view, a spatial plan viewer, a hierarchical layer system, revision tracking, spatial comments/annotations with notifications, and approvals. Everything else is explicitly deferred.
+The MVP delivers a tightly-scoped set of capabilities: a shareable-link invite system, a trade-focused "what's changed since last time" home view, a spatial plan viewer, a hierarchical layer system, revision tracking, spatial comments/annotations with notifications, approvals, and a **tenant-change workflow** that puts every post-finalization buyer-driven modification ("שינוי דייר") through structured review against architect-defined **locked elements** (load-bearing walls, wet zones, egress paths, fire separations) and a per-project **constraint checklist** before it becomes a construction instruction. Everything else is explicitly deferred.
 
 ## Problem
 
@@ -24,6 +24,7 @@ Construction coordination today happens in email threads, WhatsApp groups, paper
 - **No accountability trail** — who approved what, on which revision, when? Usually unanswerable without a forensic email search.
 - **Field rework** — the consequence: expensive, schedule-breaking corrections caught after construction has already started.
 - **Tool-gap for trades.** Existing platforms (BIM 360, ACC, Procore) are built for CAD-literate users — architects, engineers, GC office staff. The actual people doing the work — an electrician pulling cable, a paving contractor coordinating a pour — are either excluded from the system entirely (and rely on a foreman to relay) or use it badly under duress. The result: the people closest to the problem have the worst tools for surfacing it.
+- **Unconstrained tenant changes ("שינוי דייר").** In mid-rise residential construction, unit buyers routinely request modifications during construction: move a wall, add a bathroom, change a kitchen layout, enlarge a balcony. With no structured review against architectural and structural constraints, these requests reach the site as verbal instructions or scribbled markups — and the discovery that the buyer wanted to move a *load-bearing* wall, breach a *fire separation*, or misalign a *wet zone* with the unit above happens during construction, not at request time. Each undisciplined tenant change is a candidate for: schedule slip (the trade builds and rebuilds), inspector remarks (code violations), and unexpected expense (demolition + rework). On a 60-unit mid-rise, a handful of these can erase the project margin.
 
 Existing CAD tools (AutoCAD, Revit) are authoring tools. BIM 360 / ACC and similar platforms exist but skew toward enterprise pricing, heavy CAD-style UI, and per-discipline silos rather than a unified spatial map *that trades can use*. Smaller GCs and mid-size projects fall back to PDFs + email + WhatsApp and absorb the coordination cost.
 
@@ -66,10 +67,11 @@ The license cost only makes sense if NoBavel measurably moves at least two of th
 2. **Deliver measurable GC ROI on every pilot project.** Every feature in this PRD must trace back to at least one of three GC-economics outcomes: **reduce total project schedule**, **reduce inspector remarks / punch-list items at inspection**, **reduce unexpected coordination-related expenses** (change orders, field-discovered rework, RFI-driven rework). If a feature can't be tied to at least one of these, it doesn't belong in v0.1. Trade simplicity (Goal 1) is the *how*; this is the *why the GC pays*.
 3. **Frictionless invite.** A GC PM can invite a trade with a shareable link sent over any messaging channel (WhatsApp, SMS, email); the trade taps the link, signs in once, and is in the project. No account-creation flow that pre-supposes a desktop browser, no email-verification ping-pong.
 4. **Eliminate revision drift** — when a revision is published, every affected trade is notified, and the old revision is visibly superseded in the viewer. (Mechanism for Goal 2's schedule and remarks outcomes.)
-5. **Make every discussion spatial** — every comment and annotation is anchored to coordinates on a specific layer of a specific revision. No floating text threads. (Mechanism for Goal 2's unexpected-expense outcome — conflicts surface as comments *before* they become rework.)
-6. **Make accountability auditable** — every approval, comment, and revision publish event is recorded with user, timestamp, and the exact revision/layer it applied to. (Reduces dispute-driven delay; serves Goal 2.)
-7. **Make the map feel like a map** — pan, zoom, layer toggle, and progressive detail must feel like Google Maps / ArcGIS, not like AutoCAD. A non-CAD user should be able to navigate a plan within 60 seconds of first opening it.
-8. **Stay coordination-only** — no CAD editing, no BIM authoring, no schedule/budget management in MVP.
+5. **Discipline post-finalization changes.** Every unit-owner-driven (tenant) change request after the design freeze must pass through a structured review against architect-defined **locked elements** (load-bearing walls, wet zones, fire separations, egress paths, structural columns) and a per-project **constraint checklist** (project-specific rules + applicable building-code references) *before* it becomes a construction instruction. Tenant changes are a primary driver of mid-rise residential unexpected expenses; this goal is the most direct lever on Goal 2's third metric.
+6. **Make every discussion spatial** — every comment and annotation is anchored to coordinates on a specific layer of a specific revision. No floating text threads. (Mechanism for Goal 2's unexpected-expense outcome — conflicts surface as comments *before* they become rework.)
+7. **Make accountability auditable** — every approval, comment, revision publish, and tenant-change decision is recorded with user, timestamp, and the exact revision/layer/locked-element it applied to. (Reduces dispute-driven delay; serves Goal 2.)
+8. **Make the map feel like a map** — pan, zoom, layer toggle, and progressive detail must feel like Google Maps / ArcGIS, not like AutoCAD. A non-CAD user should be able to navigate a plan within 60 seconds of first opening it.
+9. **Stay coordination-only** — no CAD editing, no BIM authoring, no schedule/budget management in MVP. The tenant-change workflow uses *human-checked* locked elements and constraints; **automated** geometric / standards / code compliance checking is post-MVP (see Out of scope).
 
 ## In scope
 
@@ -132,7 +134,19 @@ The license cost only makes sense if NoBavel measurably moves at least two of th
 - Approval state is recorded immutably against the revision.
 - A revision can be marked "approved" only after all required approvers have approved. (Copy: "approved," not "approved for construction" — see Risks.)
 
-**9. Internationalization & RTL**
+**9. Tenant change workflow with locked elements**
+
+- **Locked elements.** The architect (and structural engineer, if invited as a co-author) can mark elements on the current revision as **locked** — load-bearing walls, structural columns, wet zones, fire separations, egress paths, building envelope. Each lock has a category (`structural`, `wet`, `fire`, `egress`, `envelope`, `other`) and a human-readable reason. Locks are NoBavel-side annotations on top of the imported DWG — the architect does not need to modify the CAD source file.
+- **Locked-element visual.** Locked elements render with a distinctive red-outline overlay and a small lock icon. The overlay is toggleable like any other layer; for tenant-change views it is always on.
+- **Tenant change request.** The GC PM (or architect) can create a **tenant change request** against a specific unit on the current approved revision. The request captures: requesting tenant's name + unit + contact, requested change description (free-text + optional sketch attachment + optional polygon drawn on the plan), affected layers (auto-detected from the polygon if drawn).
+- **Auto-flagged conflicts.** When a tenant-change polygon is drawn, the system flags every **locked element** intersecting the polygon and lists them in the request with their category and reason. *This is a spatial-intersect check, not a constraint-rule engine* — it surfaces what's locked nearby, not whether the change is legal under code.
+- **Constraint checklist.** Each project has a **constraint checklist** authored by the architect at project setup: typically 5–15 items (e.g., "Wet zone stays aligned with unit above," "No wall opening in firewall between units," "Balcony depth ≥ 1.2m," "Egress width ≥ 1.1m," "Window-to-wall ratio per envelope spec"). On a tenant change request, every checklist item must be explicitly confirmed (✓ or ✗ with comment) by the relevant approver before approval is recorded.
+- **Approval chain.** Default required approvers: architect (always), structural engineer (required if any structural-category locked element is touched), GC PM (always). Per-project overrides allowed.
+- **Locked-element override.** If the change requires modifying a locked element, the structural engineer must record an explicit text override with reason. The override is audit-logged and the locked element is marked as "overridden in change request #N" on the current revision until the next architect-published revision incorporates it.
+- **Tenant identity (MVP).** The unit owner / tenant is *not* a NoBavel user in MVP. They are recorded as request metadata (name + unit + contact). All communication with them happens outside the system (the GC PM relays). Post-MVP: invite the tenant as a read-only user with sign-off rights on changes against their unit.
+- **Outcome.** An approved tenant change request becomes a queued instruction for the architect to incorporate into the next revision. Until incorporated, the approved request is visible on the current revision as a pending modification overlay; the trades on the affected layers receive a notification.
+
+**10. Internationalization & RTL**
 
 - UI ships in Hebrew (RTL) and English at MVP.
 - Per-user language preference, independent of project / org / plan-content language.
@@ -147,6 +161,8 @@ The license cost only makes sense if NoBavel measurably moves at least two of th
 - IFC support — DWG only for MVP.
 - Scheduling, Gantt charts, budget/cost tracking, RFIs, submittals as formal workflow objects.
 - Standalone progress photos / as-built markers (a photo pinned to a coordinate without a comment thread). Photo attachment **inside** a comment is in scope; standalone is post-MVP.
+- **Automated rule / standards / code compliance engine.** The tenant-change workflow uses architect-defined *locked elements* and a *human-checked constraint checklist*. **Machine-checking** a proposed change against geometric constraints (structural load paths, ADA-equivalent egress geometry), text-encoded standards (Israeli building code, ISO 9001 quality references, NFPA fire-safety, ASHRAE HVAC), or BIM-style clash detection is **post-MVP** — research-grade work and a separate product surface. v0.1 deliberately keeps the rule engine human, with the system providing structured surfaces (locked-element overlay, checklist, audit trail) rather than automated verdicts.
+- **Tenant-facing access.** Unit owners ("tenants") do not have NoBavel accounts in MVP. Their identity is recorded as metadata on a tenant-change request; the GC PM relays. Direct tenant access (read-only view, sign-off rights on changes affecting their unit) is post-MVP.
 - WhatsApp Business API integration. MVP invite is a shareable link the PM pastes into any channel; we do not send via WhatsApp programmatically. (WhatsApp Business API is a post-MVP add.)
 - Arabic at v0.1. RTL machinery ships at MVP; Arabic copy is a near-term post-MVP release.
 - Native mobile apps (iOS/Android). MVP is delivered as a responsive web app, installable as a PWA.
@@ -176,6 +192,19 @@ The license cost only makes sense if NoBavel measurably moves at least two of th
 3. **Processing.** Architect sees an in-progress state; receives a notification when translation completes. System diffs the new revision's layers against the previous and identifies affected disciplines.
 4. **Fan-out.** Every trade assigned to an affected discipline gets an in-app + email notification. Their **What's changed** home view picks up the new revision the next time they open the app.
 5. **Approval gate.** GC PM requests approval on the revision from the named approvers (architect, structural engineer, owner). Each approves or rejects with comment. Once all required approve, the revision is marked **approved**.
+
+### Tertiary flow — Tenant change request
+
+1. **Trigger.** A unit buyer ("tenant") calls the GC PM: "I want a larger kitchen — move the wall between the kitchen and the living room about a meter."
+2. **PM creates request.** GC PM opens NoBavel on a tablet, navigates to the unit on the current approved revision, taps "New tenant change request." Enters tenant name + unit + contact, types the description, optionally draws a polygon on the plan over the affected area.
+3. **System flags locks.** The system spatial-intersects the polygon against all locked elements on the revision and lists them in the request: "This change intersects 1 *structural* locked element ('Load-bearing wall — N-S spine, level 4') and 1 *fire* locked element ('Unit-to-unit firewall')."
+4. **Approvers assigned.** Required approvers auto-resolve from the lock categories: architect (always) + structural engineer (because a structural lock is touched) + GC PM (always). All notified in-app + email.
+5. **Architect reviews.** Architect opens the request on a tablet, sees the polygon + flagged locks. Walks through the constraint checklist: ticks "Wet zone alignment — N/A," "Firewall integrity — ✗, this breaches the unit-to-unit firewall," adds a comment, **rejects** the request with reason.
+6. **Resolution branch.**
+    - **Path A (rejected).** PM relays to the tenant. End.
+    - **Path B (revised).** Architect proposes an alternative (move the wall a different way that doesn't breach the firewall) and re-opens the request with a new polygon. Re-reviewed.
+    - **Path C (approved with override).** If the structural engineer signs an explicit override on a locked element and all approvers tick the checklist, the request is approved. The approved request is visible on the current revision as a pending modification overlay; the affected trades (carpentry, electrical, plumbing on the unit) get a notification. The architect schedules the change to be incorporated into the next revision they publish.
+7. **Audit.** Every step — request created, locks flagged, checklist ticks, approver decisions, override (if any), final outcome — is recorded in the audit log against the unit, the request id, and the revision.
 
 ### Failure / edge states
 
@@ -213,6 +242,15 @@ The license cost only makes sense if NoBavel measurably moves at least two of th
 - The system must enforce role-based permissions per the *Permissions* table; deny prohibited actions both at the API and the UI level.
 - The system must record an immutable audit log of revision publishes, approvals, and resolution events.
 - The system must support per-user UI language preference (Hebrew / English) with full RTL layout in Hebrew.
+- The system must let an architect (and structural engineer if invited) **mark elements** on the current revision as **locked**, with a category (`structural`, `wet`, `fire`, `egress`, `envelope`, `other`) and a human-readable reason. Marks are NoBavel-side annotations, not edits to the CAD source.
+- The system must render locked elements with a distinctive, accessible visual treatment (red outline + lock icon) and toggle their visibility like a layer (but always-on in tenant-change views).
+- The system must let a GC PM (or architect) create a **tenant change request** against a specific unit on the current approved revision, capturing: tenant name + unit identifier + contact, free-text description, optional sketch attachment, optional polygon drawn over the affected area on the plan.
+- The system must spatial-intersect a tenant-change polygon (if provided) against locked elements on the revision and list every intersecting lock in the request with its category and reason.
+- The system must auto-resolve required approvers from the flagged lock categories: architect always; structural engineer required when any structural-category lock is intersected; GC PM always. Per-project overrides allowed.
+- The system must support a per-project, architect-authored **constraint checklist** of 5–15 textual rules, surfaced on every tenant-change request; each item must be explicitly confirmed (✓ / ✗ + comment) by the appropriate approver before the approver can record their decision.
+- The system must require a **locked-element override** — explicit text justification signed by the structural engineer — for a tenant change request to be approved when any structural-category lock is touched. Overrides are audit-logged.
+- The system must show approved-but-not-yet-incorporated tenant changes as a **pending modification overlay** on the current revision and notify trades on the affected layers/disciplines.
+- The system must record an immutable audit log of tenant-change events: request created, polygon drawn, locks flagged, checklist ticks (with approver + comment), approver decisions, overrides, final outcome.
 
 ### Non-functional
 
@@ -243,6 +281,16 @@ The license cost only makes sense if NoBavel measurably moves at least two of th
 | Trade contractor   | ✓ (own disciplines + shared backdrop) | ✓       | ✓           | —                | —                | —             | ✓ (own comments)  |
 | Inspector          | ✓                                     | ✓       | ✓           | —                | —                | ✓ (if named)  | ✓ (own comments)  |
 | Owner / Developer  | ✓                                     | ✓       | —           | —                | —                | ✓ (if named)  | —                 |
+
+**Tenant-change permissions** (extension of the table above):
+
+- **Mark elements as locked**: Architect (primary), Structural engineer (if invited as co-author). No other role.
+- **Author / edit constraint checklist**: Architect, at project setup. GC PM can propose edits but cannot author.
+- **Create tenant-change request**: GC PM (primary, on behalf of tenant), Architect.
+- **Approve tenant-change request**: Architect always; Structural engineer required when a structural-category lock is touched; GC PM always.
+- **Override a locked element**: Structural engineer only (with required text justification, audit-logged).
+- **View tenant changes affecting their work**: Trade contractor (own disciplines), Inspector. No approval rights.
+- **Tenant / unit owner**: not a NoBavel user in MVP. No permissions row.
 
 ## Acceptance criteria
 
@@ -275,6 +323,11 @@ Each criterion is observable and pass/fail.
 - **A24. No CAD jargon in UI.** A copy-lint rule fails CI if any user-facing string contains the words "viewport," "plot," "xref," "model space," or "paper space" (in any supported language).
 - **A25. Trades no-training test.** In a moderated usability test with at least 5 trade-contractor participants (mix of electrician / plumbing / HVAC / paving / glazing / flooring) who have never seen the product, ≥ 4 of 5 complete the daily workflow (tap invite link → sign in → see what's changed → pin a comment → acknowledge revision) within 5 minutes from first tap of the link, with **no facilitator intervention**. Re-run before every release. **A failure of this test blocks ship.**
 - **A26. GC measurement framework in place.** Before pilot construction starts, the following exist *in writing, signed by the GC PM and the NoBavel team*: (a) the pilot project profile, (b) the baseline project profile (most recent comparable), (c) the three baseline numbers — schedule days, inspector remarks count, coordination-related expense total, (d) the agreed taxonomy of "coordination-related expense," (e) the GC's commitment to track the same three numbers on the pilot project. The system has recorded these as a `ProjectBaseline` row and all leading-indicator instrumentation (revision-to-ack time, comment-resolution time, unresolved-comment count, badge-resolution rate) is live and emitting data.
+- **A27. Locked elements visible and toggleable.** Given an architect has marked at least one element on a revision as locked (category + reason), every user with view access sees the locked-element visual treatment (red outline + lock icon) when the lock-overlay layer is on, and the visual treatment is forced on inside any tenant-change-request view regardless of the user's toggle.
+- **A28. Tenant-change request creation and lock auto-flagging.** Given a GC PM creates a tenant-change request and draws a polygon on the plan, the system performs a spatial-intersect against all locked elements on the current revision and lists every intersecting lock (with category + reason) on the request within 2 seconds. Auto-resolved required approvers reflect the categories touched (e.g., structural lock present → structural engineer added).
+- **A29. Constraint checklist gate.** Given a tenant-change request has approvers assigned, no approver can record their decision (approve / reject) until every applicable constraint-checklist item has been explicitly confirmed (✓ / ✗ + comment). Attempting to approve with un-ticked items is blocked at the API and the UI.
+- **A30. Locked-element override is recorded.** Given a tenant-change request touches a structural-category locked element, the request cannot reach "approved" status unless the structural engineer has recorded an explicit text override of that lock, and the override is in the audit log with author, timestamp, request id, and the specific locked-element id.
+- **A31. Pending-modification overlay and trade notification.** Given a tenant-change request has been approved but the change has not yet been incorporated into a new revision, the approved request shows as a pending-modification overlay on the current revision for any user viewing that unit; trades with the affected disciplines receive an in-app + email notification.
 
 ## Success metrics
 
@@ -287,6 +340,7 @@ These are the three line items the GC's economic case rests on. All are computed
 - **Schedule reduction.** Total project schedule (start of construction → substantial completion) reduced by **≥ 8%** vs. the GC's baseline. Calibration target — see Open questions.
 - **Remarks reduction.** Inspector remarks / punch-list items at final inspection reduced by **≥ 25%** vs. the GC's baseline (using the same inspector or inspection regime where possible).
 - **Unexpected-expense reduction.** Coordination-related unexpected expenses (change orders, field-discovered rework, RFI-driven rework, demolition + redo — definition agreed in writing at pilot kickoff) reduced by **≥ 30%** vs. the GC's baseline. Reported in absolute currency *and* as a percentage of total project cost.
+- **Tenant-change discipline.** **100%** of unit-buyer-driven (tenant) changes on the pilot project are processed through NoBavel's tenant-change workflow rather than verbal / WhatsApp / scribbled-markup channels (self-reported by GC PM, cross-checked against system request count). Of those, **≥ 90%** that touched a locked element were caught at request time, not at construction time (measured: no field-discovered conflicts on units with approved tenant changes, vs. pilot baseline).
 
 > Pilot success criterion: NoBavel measurably moves **at least two of these three** numbers on the pilot project. One out of three is insufficient — it's likely noise. Three of three is the target.
 
@@ -328,6 +382,10 @@ Targets are **proposed**; the GC-ROI thresholds in particular must be calibrated
 | Users default back to WhatsApp / email because the in-app comment habit doesn't form. | Product | **High** | Every email + in-app notification deep-links to the spatial pin; **What's changed** home view makes ignoring the app costly; measure spatial-commenting share weekly. |
 | Invite link security: leaked links allow access by unintended people. | Security | **High** | Bind invite token to first-acceptor device + identity; revoke unused links on expiry; PM-revocable mid-flight; rate-limit attempts; audit-log all acceptances. |
 | Layer hierarchy derived from CAD file metadata is inconsistent across architects/firms — same discipline modeled with different layer names. | Product / Data | **High** | MVP: per-project layer-to-discipline mapping UI for GC PM. Document the limitation explicitly. Post-MVP: layer-name normalization. |
+| **Architect doesn't have bandwidth to mark every locked element up front.** Manual locked-element annotation is labor-intensive on a 60-unit mid-rise (hundreds of walls, dozens of wet zones); if the architect under-invests, the auto-flagging becomes a false-confidence signal — "no locks intersected" doesn't mean "no problem." | Product | **High** | Provide bulk-lock tooling (e.g., "mark every wall in the structural layer as locked, category=structural" — single action). Define a minimum locked-element coverage standard (e.g., 100% of structural-discipline geometry, 100% of fire-rated walls between units) at pilot kickoff. The constraint checklist is the safety net for things the architect didn't mark. |
+| **Manual constraint checklist is error-prone vs. the automation promise.** Approvers may tick boxes without genuinely verifying each item; the absence of automation creates a verification-theater risk. | Product | High | Make the checklist concrete and unit-of-change-specific, not generic; record the approver's comment per item (not just ✓/✗); review false-negatives at pilot retrospective; treat repeated rubber-stamping as a feature problem and shorten the checklist. |
+| **Tenant-change request becomes a bottleneck** if approvers are slow, blocking the GC from giving the buyer an answer. | Delivery / Product | Medium | Notification SLAs on tenant-change requests; PM can see at a glance which requests are blocked on which approver; escalation path documented. Measure median tenant-change-request-to-decision time as a leading indicator. |
+| **Locked-element override becomes routine** — structural engineer signs them all because the checklist process is too tedious, defeating the discipline goal. | Product | Medium | Override count and rate are exposed as project-level metrics; spike in override rate triggers a review with the architect + structural; the discipline depends on overrides being rare. |
 | Designers default to desktop-first habits and produce layouts that only work well on desktop. | UX / Delivery | **High** | Every design review and usability test runs on a physical tablet first, then a phone. No screen is signed off purely from a desktop browser. |
 | Tablet performance on large DWGs is worse than expected; APS Viewer chokes on mid-tier iPads. | Technical | **High** | Benchmark on a target-tier iPad and target-tier Android tablet before locking the viewer integration; degrade gracefully (simplified rendering tier) if needed. |
 | Per-tenant data isolation bug leaks plans across orgs. | Security | **High** | Tenant scoping enforced at the repository/data-access layer (not just route guards); automated cross-tenant access tests in CI. |
@@ -368,6 +426,13 @@ The following materially affect scope, design, or success metrics and need answe
 17. **Comment migration on revision.** When an anchor layer changes, "needs review" is the MVP behavior. Should we attempt automated re-anchoring (nearest-coordinate) post-MVP, or keep it explicit forever?
 18. **Project size at pilot.** Mid-rise residential 5–15 floors is the target; what's the typical pilot project at the upper end (e.g., 15-floor, 8 disciplines, hundreds of layers)? Affects the v0.1 scale target.
 19. **Arabic timeline.** Post-MVP, but how soon? Affects how much we invest in Arabic-specific i18n testing infrastructure during v0.1.
+20. **Locked-element authorship workflow.** Does the architect mark locks element-by-element (tap each wall) or layer-by-layer (designate a layer "load-bearing" → all geometry in it inherits the lock)? Recommendation: support both, with layer-level as the bulk operation and element-level as the override / refinement. Pilot will tell us which the architect actually uses.
+21. **Source of truth for "what's locked."** If the architect's structural engineer publishes a new revision that *changes* what's load-bearing, what happens to the locked-element annotations from the prior revision? Migrate forward? Re-author? This is a non-trivial design question that needs the pilot architect's input.
+22. **Constraint checklist authoring.** Who writes the per-project checklist — pilot-GC architect alone, or with NoBavel's onboarding team? Is there a Hebrew-language template library for common mid-rise residential rules we can ship with v0.1? Need a pilot-architect conversation.
+23. **Building-code reference scope.** Each project can reference applicable Israeli building code sections as informational context on the approval screen. Which sections? Free-text references, or a structured library? Recommendation: free-text per project for MVP; structured library is post-MVP.
+24. **Tenant identity in MVP.** Tenants are not NoBavel users in MVP; they're metadata on a request. Is "name + unit + phone" sufficient, or do regulators / contracts require a tenant signature on changes? Need legal review and pilot-GC's contract templates.
+25. **Override threshold.** Should the system flag tenant-change requests with override-of-locked-element to an additional reviewer (e.g., owner/developer) automatically? Or is the structural engineer's override sufficient? Pilot signal needed.
+26. **Post-MVP rule engine vision.** Roughly what does the v0.2+ automated rule engine look like — geometric clash detection? Text-encoded standards in a knowledge base? A simple boolean-tag system? Worth a separate vision document; signaled to design partners so they understand v0.1's deliberate manual approach.
 
 ## Handoff to architecture / UX
 
@@ -398,6 +463,13 @@ The following materially affect scope, design, or success metrics and need answe
 - `ProjectBaseline` (Project × baseline_schedule_days × baseline_remarks_count × baseline_coordination_expense_total × baseline_project_reference × agreed_at) — the GC's reported metrics from their most-recent-comparable project, captured in writing at pilot kickoff. Drives the GC ROI computation.
 - `ProjectOutcome` (Project × actual_schedule_days × actual_remarks_count × actual_coordination_expense_total × computed_at) — the same three metrics for the current project at substantial completion. Reported by the GC; deltas against `ProjectBaseline` give the GC ROI numbers.
 - `ProxyMetric` (Project × metric_name × computed_value × window_start × window_end) — in-product leading indicators: revision-to-acknowledgment time, comment-resolution time, unresolved-comment count, badge-resolution rate. Computed continuously during the pilot.
+- `LockedElement` (Revision × element_geometry_ref × category × reason × author × locked_at) — architect-defined annotation marking a plan element (or a whole layer) as non-modifiable without override. Category enum: `structural`, `wet`, `fire`, `egress`, `envelope`, `other`. NoBavel-side annotation; does not modify the CAD source.
+- `ConstraintChecklistTemplate` (Project × items[]) — the project's per-project rule checklist authored by the architect at setup. Each item: id, text (per-language), category (informational tag), required (always shown vs. conditional on lock category touched).
+- `TenantChangeRequest` (Project × Unit × Revision × tenant_name × tenant_contact × description × sketch_attachment? × polygon? × flagged_locks[] × required_approvers[] × status: draft|pending|approved|rejected × created_by × created_at)
+- `ChecklistTick` (TenantChangeRequest × ChecklistItem × Approver × decision: passes|fails|na × comment)
+- `LockedElementOverride` (TenantChangeRequest × LockedElement × StructuralEngineer × text_justification × overridden_at) — required when an approved tenant change touches a `structural`-category lock.
+- `TenantChangeDecision` (TenantChangeRequest × Approver × decision: approve|reject|request_changes × comment × decided_at)
+- `PendingModificationOverlay` (TenantChangeRequest × Revision × geometry) — visible until the architect publishes a new revision incorporating the change.
 
 ### Likely screens / surfaces
 
@@ -447,6 +519,10 @@ See the table in *Requirements → Permissions*. Architectural note: enforce at 
 15. **Touch gesture layer.** Pinch / two-finger pan / single-tap pin / long-press context — decide whether to ride on APS Viewer's gesture handling, layer our own on top, or both. Lock the gesture map before any UX work on the viewer.
 16. **i18n / RTL architecture.** Choose the i18n stack (next-intl, react-intl, custom) and the RTL strategy (CSS logical properties, `dir="rtl"` on root, per-component overrides) and lock both before component-library work begins. Retrofitting RTL is one of the worst tax bills in this PRD.
 17. **"What's changed" computation.** UserActivity.lastSeenAt × project-event-stream filtered by user's disciplines and mentions. Decide whether to compute on read (cheaper, scales worse) or maintain a per-user inbox (more storage, faster reads). Recommend read-side computation at MVP scale.
+18. **Locked-element annotation model.** Two-level: layer-level lock (designate an entire layer as locked, all geometry in it inherits) and element-level lock (mark a specific polygon / line). The element-level reference must survive across revisions when the geometry didn't change; needs a stable element-id strategy from the APS-translated geometry. Inline annotation store (per-revision) vs. cross-revision lock-set with element-id mapping — lock the model before tenant-change-workflow code is written.
+19. **Spatial intersect for tenant-change polygon vs. locks.** Server-side or client-side? Recommend server-side via PostGIS (the only Postgres extension we'd need to add) — keeps the intersect deterministic, auditable, and not vulnerable to client tampering. The geometry is 2D polygons in the APS drawing's coordinate space; PostGIS handles this cleanly with `ST_Intersects`.
+20. **Locked-element migration across revisions.** When the architect publishes a new revision, the existing locked-element set must migrate forward: identical geometry keeps its lock; changed geometry needs architect review. Define the migration rules (auto-carry, prompt-on-conflict, drop) before the second revision in any project happens.
+21. **Tenant-change request lifecycle and idempotency.** Request status transitions: draft → pending → (approved | rejected | request_changes); approval composite from multiple approvers each independent; structural override is a separate state record. Define the state machine and make all transitions idempotent at the API.
 
 ### Handoff sequence
 
