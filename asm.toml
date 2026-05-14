@@ -1,0 +1,42 @@
+# ASM — Agent Skill Manager configuration
+
+[project]
+name = "NoBavel"
+version = "0.1.0"
+
+[asm]
+version = "0.1.0"
+
+[skills]
+nextjs-app-router-fundamentals = {source = "skills.sh:https://skills.sh/wsimmonds/claude-nextjs-skills/nextjs-app-router-fundamentals"}
+bullmq-specialist = {source = "github:https://github.com/davila7/claude-code-templates/tree/main/cli-tool/components/skills/development/bullmq-specialist"}
+nestjs-api = {source = "github:https://github.com/Survikrowa/Game-Critique/tree/main/.github/skills/nestjs-api"}
+product-prd-agent = {source = "github:https://github.com/gil-kapel/cursor-course-skills/tree/main/module-02-skills-and-agents/lesson-2.2-product-agent-prd/product-prd-agent"}
+cursor-skill-foundation = {source = "github:https://github.com/gil-kapel/cursor-course-skills/tree/main/module-02-skills-and-agents/lesson-2.1-skills-agents-asm/cursor-skill-foundation"}
+tech-lead-architecture-agent = {source = "github:https://github.com/gil-kapel/cursor-course-skills/tree/main/module-02-skills-and-agents/lesson-2.3-tech-lead-architecture/tech-lead-architecture-agent"}
+ux-user-flow-agent = {source = "github:https://github.com/gil-kapel/cursor-course-skills/tree/main/module-02-skills-and-agents/lesson-2.4-ux-user-flow/ux-user-flow-agent"}
+ui-design-systems-agent = {source = "github:https://github.com/gil-kapel/cursor-course-skills/tree/main/module-02-skills-and-agents/lesson-2.5-ui-design-systems/ui-design-systems-agent"}
+security-review-agent = {source = "github:https://github.com/gil-kapel/cursor-course-skills/tree/main/module-02-skills-and-agents/lesson-2.6-security-agent/security-review-agent"}
+dev-composer-agent = {source = "github:https://github.com/gil-kapel/cursor-course-skills/tree/main/module-02-skills-and-agents/lesson-2.7-dev-agent-composer/dev-composer-agent"}
+quality-gate-agent = {source = "github:https://github.com/gil-kapel/cursor-course-skills/tree/main/module-02-skills-and-agents/lesson-2.8-quality-gate-agent/quality-gate-agent"}
+debug-fix-agent = {source = "github:https://github.com/gil-kapel/cursor-course-skills/tree/main/module-02-skills-and-agents/lesson-2.9-debug-agent/debug-fix-agent"}
+zustand-state-management = {source = "skills.sh:https://skills.sh/mindrally/skills/zustand-state-management"}
+database-migrations-sql-migrations = {source = "github:https://github.com/sickn33/antigravity-awesome-skills/tree/main/skills/database-migrations-sql-migrations"}
+redis-patterns = {source = "github:https://github.com/patricio0312rev/skills/tree/main/performance/redis-patterns"}
+vitest = {source = "github:https://github.com/sanity-io/next-sanity/tree/main/.agents/skills/vitest"}
+terraform-aws = {source = "github:https://github.com/pluginagentmarketplace/custom-plugin-terraform/tree/main/skills/terraform-aws"}
+shadcn-ui = {source = "github:https://github.com/google-labs-code/stitch-skills/tree/main/skills/shadcn-ui"}
+playwright-testing = {source = "github:https://github.com/laurigates/claude-plugins/tree/main/testing-plugin/skills/playwright-testing"}
+docker-deployment = {source = "github:https://github.com/pluginagentmarketplace/custom-plugin-nodejs/tree/main/skills/docker-deployment"}
+websockets-realtime = {source = "github:https://github.com/travisjneuman/.claude/tree/main/skills/websockets-realtime"}
+aws-s3-management = {source = "github:https://github.com/aj-geddes/useful-ai-prompts/tree/main/skills/aws-s3-management"}
+typescript-strict = {source = "github:https://github.com/citypaul/.dotfiles/tree/main/claude/.claude/skills/typescript-strict"}
+
+[expertises]
+nobavel-next-js-frontend-with-nestjs-api-postgresq = {description = "NoBavel: Next.js frontend with NestJS API, PostgreSQL, Redis, BullMQ workers, WebSockets, Autodesk APS viewer, strict TypeScript, Docker on AWS", skills = ["nextjs-app-router-fundamentals", "bullmq-specialist", "nestjs-api"], intent_tags = ["nobavel next js frontend with nestjs api postgresq", "expertise routing"], task_signals = ["NoBavel: Next.js frontend with NestJS API, PostgreSQL, Redis, BullMQ workers, WebSockets, Autodesk APS viewer, strict TypeScript, Docker on AWS"], confidence_hint = "Use when task signals strongly match this domain vocabulary.", selection_rubric = ["Match at least one task signal before selecting this expertise.", "Load required skills first; then add advanced optional skills.", "Only use fallback skills if advanced optional skills do not fit."], prefer_advanced = true, skill_policies = [{name = "nextjs-app-router-fundamentals", role = "required", execution_order = 0, is_advanced = false}, {name = "bullmq-specialist", role = "required", execution_order = 1, is_advanced = false}, {name = "nestjs-api", role = "required", execution_order = 2, is_advanced = false}]}
+
+[agents]
+cursor = true
+claude = true
+codex = false
+copilot = false

@@ -1,0 +1,19 @@
+---
+description: Project rule for [area]. Replace with concrete trigger wording.
+globs: ["**/*"]
+alwaysApply: false
+---
+
+## Purpose
+- [What this rule is protecting]
+
+## Defaults
+- [Preferred stack / pattern]
+
+## Do
+- [Concrete rule 1]
+- [Concrete rule 2]
+
+## Avoid
+- [Anti-pattern 1]
+- [Anti-pattern 2]
