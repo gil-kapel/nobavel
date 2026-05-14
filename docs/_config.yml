@@ -1,0 +1,8 @@
+# Jekyll config for GitHub Pages (source: main branch, folder: /docs).
+# Only the rendered PRD (index.html) should be publicly served.
+# Every .md file in this folder contains strategy or system prompts
+# meant to stay internal — exclude them all from the published site.
+exclude:
+  - "*.md"
+  - "README.md"
+  - "scripts/"

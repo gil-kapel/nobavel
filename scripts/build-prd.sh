@@ -1,12 +1,15 @@
 #!/usr/bin/env bash
-# Render docs/prd.md to docs/prd.html (local preview) and site/index.html (GitHub Pages).
-# Both targets receive identical output. Re-run after editing docs/prd.md.
+# Render docs/prd.md to docs/index.html.
+# This single file is the local preview AND the GitHub Pages entry
+# (Pages is configured to serve from /docs; docs/_config.yml excludes
+# all the strategy .md files so only this rendered PRD is public).
+# Re-run after editing docs/prd.md.
 
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SRC="$ROOT/docs/prd.md"
-TARGETS=("$ROOT/docs/prd.html" "$ROOT/site/index.html")
+TARGETS=("$ROOT/docs/index.html")
 
 if [[ ! -f "$SRC" ]]; then
   echo "error: source markdown not found at $SRC" >&2
