@@ -8,6 +8,8 @@ NoBavel is a GIS-style construction coordination platform built around a live sp
 
 **Who pays, who uses.** The **General Contractor (GC)** is the buyer (per-project license, invites everyone else). The **trade contractor is the primary user** the product is designed around. Architects, PMs, inspectors, and owners are first-class participants but the UX is shaped by the trade.
 
+**Why the GC pays.** The GC's economic case for NoBavel rests on three measurable outcomes per project: **shorter total project schedule** (less time lost to revision miscommunication and waiting for the right plan to reach the right trade), **fewer inspector remarks and punch-list items** (because trades built against the *current* plan, not yesterday's), and **lower unexpected expenses** (fewer change orders, RFIs, and field-discovered conflicts requiring rework). Every feature in this PRD must trace back to at least one of those three outcomes — otherwise it doesn't belong in v0.1. Trade simplicity is the *operational lever*; GC ROI is the *economic destination*.
+
 **Pilot context.** v0.1 targets **mid-rise residential (5–15 floors)** in **Israel**, with **Hebrew (RTL) and English** at launch; Arabic deferred to a near-term post-MVP release with RTL-ready architecture from day one.
 
 The MVP delivers seven tightly-scoped capabilities: a shareable-link invite system, a trade-focused "what's changed since last time" home view, a spatial plan viewer, a hierarchical layer system, revision tracking, spatial comments/annotations with notifications, and approvals. Everything else is explicitly deferred.
@@ -25,13 +27,23 @@ Construction coordination today happens in email threads, WhatsApp groups, paper
 
 Existing CAD tools (AutoCAD, Revit) are authoring tools. BIM 360 / ACC and similar platforms exist but skew toward enterprise pricing, heavy CAD-style UI, and per-discipline silos rather than a unified spatial map *that trades can use*. Smaller GCs and mid-size projects fall back to PDFs + email + WhatsApp and absorb the coordination cost.
 
-Success means: every trade on a project, on the day they show up to work, opens NoBavel, sees the *current* spatial state with their relevant layers, sees what changed since they last looked, leaves comments pinned to coordinates when they find a problem, and cannot proceed without seeing — and acknowledging — revisions that affect them. **The trade does this without anyone explaining the app to them.**
+**Cost of the status quo (for the GC).** Every revision-drift incident, every spatially-illegible argument, every late-discovered conflict translates into one or more of three line items the GC absorbs directly: **days added to the schedule** (trades waiting, redoing, or rebuilding), **remarks raised at inspection** (each remark = a reopen → fix → reinspect cycle), and **unexpected expenses** (change orders, additional labor, demolition and redo, RFI-driven rework). Coordination-related rework is widely cited as a meaningful share of mid-rise residential project cost; the exact figure varies by source, but every GC who has built a mid-rise can point to specific incidents on their last project. These are precisely the line items NoBavel is built to reduce — and they are how the GC will judge whether the platform is worth paying for.
+
+Success means: every trade on a project, on the day they show up to work, opens NoBavel, sees the *current* spatial state with their relevant layers, sees what changed since they last looked, leaves comments pinned to coordinates when they find a problem, and cannot proceed without seeing — and acknowledging — revisions that affect them. **The trade does this without anyone explaining the app to them.** As a downstream consequence, the GC sees fewer remarks, a shorter schedule, and fewer unexpected expenses on the project's bottom line.
 
 ## Target users
 
 **Primary user — Trade Contractor.** Electricians, plumbers, HVAC technicians, glazing contractors, paving contractors, flooring contractors, structural sub-contractors. Typically: not CAD-literate; mobile-first habits (WhatsApp is the dominant work tool); on a tablet or phone in the field; mixed Hebrew/English literacy; sometimes wearing gloves; sometimes in direct sunlight; intermittent connectivity. **Goal:** know what I have to do today, where, and whether anything affecting my work has changed. **The product is designed for this user.**
 
-**Buyer — General Contractor (GC).** A construction firm running the project. Pays per-project; invites trades, architects, inspectors, owners under that license. The GC's project manager is the operator who sets up the project, invites people, configures layer-to-discipline mapping, and chases approvals. **The GC's PM is a power user but is not the user the product is *shaped around*.**
+**Buyer — General Contractor (GC).** A construction firm running the project. Pays per-project; invites trades, architects, inspectors, owners under that license. The GC's project manager is the operator who sets up the project, invites people, configures layer-to-discipline mapping, and chases approvals.
+
+**Why the GC writes the check.** The GC is not buying a coordination tool for coordination's sake — they're buying a measurable reduction in three line items they absorb on every project:
+
+1. **Total project schedule** — days from start to substantial completion. Coordination failures add days; the platform removes them.
+2. **Inspector remarks and punch-list items** — each remark is a reopen → fix → reinspect cycle that costs labor and time. The platform reduces them by making sure every trade builds against the current plan.
+3. **Unexpected expenses** — change orders, field-discovered conflicts requiring rework, RFI-driven rework, demolition + redo. The platform surfaces conflicts as comments *before* they become rework.
+
+The license cost only makes sense if NoBavel measurably moves at least two of these three numbers on the pilot project vs. the GC's most recent comparable project. **The GC's PM is a power user but is not the user the product is *shaped around*** — the trade is, because the trade is the leverage point for the GC's outcomes. If the trade doesn't open the app, the GC's numbers don't move.
 
 **Secondary users:**
 
@@ -50,13 +62,14 @@ Success means: every trade on a project, on the day they show up to work, opens 
 
 ## Goals
 
-1. **Make trades productive without training** — a trade contractor with zero CAD experience must complete the daily workflow (tap invite link → land in project → see what's changed → leave a spatial comment if needed → acknowledge the revision) within **5 minutes of first opening the app, with no onboarding tutorial**. This is the primary product goal; everything else serves it.
-2. **Frictionless invite.** A GC PM can invite a trade with a shareable link sent over any messaging channel (WhatsApp, SMS, email); the trade taps the link, signs in once, and is in the project. No account-creation flow that pre-supposes a desktop browser, no email-verification ping-pong.
-3. **Eliminate revision drift** — when a revision is published, every affected trade is notified, and the old revision is visibly superseded in the viewer.
-4. **Make every discussion spatial** — every comment and annotation is anchored to coordinates on a specific layer of a specific revision. No floating text threads.
-5. **Make accountability auditable** — every approval, comment, and revision publish event is recorded with user, timestamp, and the exact revision/layer it applied to.
-6. **Make the map feel like a map** — pan, zoom, layer toggle, and progressive detail must feel like Google Maps / ArcGIS, not like AutoCAD. A non-CAD user should be able to navigate a plan within 60 seconds of first opening it.
-7. **Stay coordination-only** — no CAD editing, no BIM authoring, no schedule/budget management in MVP.
+1. **Make trades productive without training** — a trade contractor with zero CAD experience must complete the daily workflow (tap invite link → land in project → see what's changed → leave a spatial comment if needed → acknowledge the revision) within **5 minutes of first opening the app, with no onboarding tutorial**. This is the primary product goal because it is the *operational lever* for everything below.
+2. **Deliver measurable GC ROI on every pilot project.** Every feature in this PRD must trace back to at least one of three GC-economics outcomes: **reduce total project schedule**, **reduce inspector remarks / punch-list items at inspection**, **reduce unexpected coordination-related expenses** (change orders, field-discovered rework, RFI-driven rework). If a feature can't be tied to at least one of these, it doesn't belong in v0.1. Trade simplicity (Goal 1) is the *how*; this is the *why the GC pays*.
+3. **Frictionless invite.** A GC PM can invite a trade with a shareable link sent over any messaging channel (WhatsApp, SMS, email); the trade taps the link, signs in once, and is in the project. No account-creation flow that pre-supposes a desktop browser, no email-verification ping-pong.
+4. **Eliminate revision drift** — when a revision is published, every affected trade is notified, and the old revision is visibly superseded in the viewer. (Mechanism for Goal 2's schedule and remarks outcomes.)
+5. **Make every discussion spatial** — every comment and annotation is anchored to coordinates on a specific layer of a specific revision. No floating text threads. (Mechanism for Goal 2's unexpected-expense outcome — conflicts surface as comments *before* they become rework.)
+6. **Make accountability auditable** — every approval, comment, and revision publish event is recorded with user, timestamp, and the exact revision/layer it applied to. (Reduces dispute-driven delay; serves Goal 2.)
+7. **Make the map feel like a map** — pan, zoom, layer toggle, and progressive detail must feel like Google Maps / ArcGIS, not like AutoCAD. A non-CAD user should be able to navigate a plan within 60 seconds of first opening it.
+8. **Stay coordination-only** — no CAD editing, no BIM authoring, no schedule/budget management in MVP.
 
 ## In scope
 
@@ -261,10 +274,34 @@ Each criterion is observable and pass/fail.
 - **A23. Mixed-direction comments.** Given a comment containing both Hebrew and English in one paragraph, the text renders per the Unicode bidirectional algorithm with no broken word order or punctuation.
 - **A24. No CAD jargon in UI.** A copy-lint rule fails CI if any user-facing string contains the words "viewport," "plot," "xref," "model space," or "paper space" (in any supported language).
 - **A25. Trades no-training test.** In a moderated usability test with at least 5 trade-contractor participants (mix of electrician / plumbing / HVAC / paving / glazing / flooring) who have never seen the product, ≥ 4 of 5 complete the daily workflow (tap invite link → sign in → see what's changed → pin a comment → acknowledge revision) within 5 minutes from first tap of the link, with **no facilitator intervention**. Re-run before every release. **A failure of this test blocks ship.**
+- **A26. GC measurement framework in place.** Before pilot construction starts, the following exist *in writing, signed by the GC PM and the NoBavel team*: (a) the pilot project profile, (b) the baseline project profile (most recent comparable), (c) the three baseline numbers — schedule days, inspector remarks count, coordination-related expense total, (d) the agreed taxonomy of "coordination-related expense," (e) the GC's commitment to track the same three numbers on the pilot project. The system has recorded these as a `ProjectBaseline` row and all leading-indicator instrumentation (revision-to-ack time, comment-resolution time, unresolved-comment count, badge-resolution rate) is live and emitting data.
 
 ## Success metrics
 
-Quantified targets for v0.1 success, measured 90 days after the first paying project goes live with a real GC pilot.
+Quantified targets for v0.1 success, measured at substantial completion of the first paying pilot project (or, for adoption metrics, 90 days after the pilot project goes live, whichever comes first).
+
+### GC ROI outcomes (the metrics the GC pays for)
+
+These are the three line items the GC's economic case rests on. All are computed as deltas vs. a baseline collected from the GC's most recent comparable project at pilot kickoff.
+
+- **Schedule reduction.** Total project schedule (start of construction → substantial completion) reduced by **≥ 8%** vs. the GC's baseline. Calibration target — see Open questions.
+- **Remarks reduction.** Inspector remarks / punch-list items at final inspection reduced by **≥ 25%** vs. the GC's baseline (using the same inspector or inspection regime where possible).
+- **Unexpected-expense reduction.** Coordination-related unexpected expenses (change orders, field-discovered rework, RFI-driven rework, demolition + redo — definition agreed in writing at pilot kickoff) reduced by **≥ 30%** vs. the GC's baseline. Reported in absolute currency *and* as a percentage of total project cost.
+
+> Pilot success criterion: NoBavel measurably moves **at least two of these three** numbers on the pilot project. One out of three is insufficient — it's likely noise. Three of three is the target.
+
+### Leading indicators (in-product proxies for the GC outcomes above)
+
+These are directly measurable in NoBavel and are expected to correlate with the GC outcomes. They are the early signals during the pilot — if these don't move, the lagging GC outcomes won't either.
+
+- **Revision-to-acknowledgment time.** Median time from revision publish to last-affected-trade acknowledgment ≤ **24 hours** during active construction phases. (Faster ack → less time trades spend building against old plans → fewer remarks + faster schedule.)
+- **Comment resolution time.** Median time from comment opened (a flagged coordination issue) to resolved ≤ **48 hours**. (Faster resolution → conflicts caught and fixed at planning cost, not field-rework cost.)
+- **Unresolved-comment leakage.** Fewer than **5% of opened comments** remain unresolved at substantial completion. (Unresolved comments at handover are a proxy for issues that became field problems.)
+- **"Needs review" badge resolution.** ≥ **90%** of "needs review on new revision" badges are resolved (acknowledged or commented) within 7 days of the revision that produced them.
+
+### Trade adoption metrics (the mechanism for the outcomes above)
+
+If trades don't adopt, none of the above moves. These metrics gate the others.
 
 - **Trades time-to-first-value.** ≥ 80% of invited trade users complete the daily workflow within **5 minutes** of receiving their invite, with no training session, measured via funnel telemetry.
 - **Invite conversion.** ≥ 90% of invite links sent to trades result in a successful first sign-in within 48 hours of send.
@@ -273,16 +310,19 @@ Quantified targets for v0.1 success, measured 90 days after the first paying pro
 - **Adoption breadth.** ≥ 80% of named trade members on a project log in at least once per week during active construction phases.
 - **Revision currency.** ≥ 95% of revision-acknowledgment notifications are acknowledged within 48 hours of publish.
 - **Spatial commenting share.** ≥ 70% of project communication on coordination issues happens as in-app comments (self-reported by GC PM at end-of-project survey) vs. WhatsApp / email.
-- **Coordination defects.** GC-reported coordination-related rework events drop by ≥ 30% vs. the GC's last comparable project (self-reported baseline collected at pilot kickoff).
-- **System.** Plan-load p95 ≤ 3s on tablet over LTE; WebSocket event delivery p95 ≤ 2s; monthly availability ≥ 99.5%.
 
-Targets are **proposed**; calibrate after pilot data — see Open questions.
+### System metrics
+
+- Plan-load p95 ≤ 3s on tablet over LTE; WebSocket event delivery p95 ≤ 2s; monthly availability ≥ 99.5%.
+
+Targets are **proposed**; the GC-ROI thresholds in particular must be calibrated with the pilot GC at kickoff — see Open questions.
 
 ## Risks
 
 | Risk | Type | Severity | Mitigation |
 |---|---|---|---|
 | Trades won't adopt the app because it feels like CAD software they've avoided their whole career. Without trade adoption the platform's whole premise fails. | Product | **Critical** | Simplicity-for-trades is goal #1. Every release runs the A25 no-training usability test on real trades before ship. If a release fails A25, it does not ship. UI copy avoids CAD terminology entirely (enforced by CI lint, A24). |
+| **Cannot prove GC ROI.** Pilot completes, trades adopt, everything *feels* better — but we cannot show the GC their schedule shortened, remarks dropped, and unexpected expenses fell. Without the three GC-outcome numbers moving, the platform has no monetization case despite technical success. | Product / GTM | **Critical** | Co-define the three-metric measurement framework with the pilot GC in writing at kickoff, *before* construction begins. Collect explicit baseline from their most recent comparable project (definition of "comparable" agreed in writing). Instrument all in-product proxy metrics from day one. Run a structured before/after review at pilot completion. If only one of three moves, treat the pilot as a learning project, not a reference customer. |
 | Pilot GC dependency — too much depends on one design partner; if their schedule slips or they pull out, v0.1 has no real-world signal. | Delivery | **High** | Recruit 2–3 candidate GC pilots in parallel; sign at least 2 to LOIs before locking v0.1 scope; treat the first pilot's project as instrumented learning, not as a monetization milestone. |
 | RTL bugs are pervasive because Hebrew correctness wasn't enforced from day one. | Technical / UX | **High** | Build RTL-correctness into the component library before any feature work; CI runs both LTR and RTL visual regression snapshots; every PR includes Hebrew QA pass. |
 | Users default back to WhatsApp / email because the in-app comment habit doesn't form. | Product | **High** | Every email + in-app notification deep-links to the spatial pin; **What's changed** home view makes ignoring the app costly; measure spatial-commenting share weekly. |
@@ -319,7 +359,11 @@ The following materially affect scope, design, or success metrics and need answe
 12. **Pricing model.** Per-project (GC-paid)? Per-seat? Per-organization? Doesn't block MVP build but blocks billing scope decisions.
 13. **Identity / SSO.** Email + password (or phone OTP) for MVP, but how soon do enterprise pilots require SAML/OIDC?
 14. **Notification channels beyond email.** SMS for approvals? Slack/Teams integration? WhatsApp Business outbound? Out of scope for v0.1 but signal interest now.
-15. **Success-metric baselines.** Coordination-rework "30% reduction" needs a baseline from the pilot's prior project — how do we collect it?
+15. **Success-metric baselines.** The GC-ROI percentages (8% schedule / 25% remarks / 30% expense) need a credible baseline from the pilot GC's prior comparable project. How do we collect it — self-report from the PM's memory, extract from their job-cost / scheduling systems, or both? What level of evidence is "credible enough" for the pilot vs. for an external success story?
+15a. **Definition of "comparable project."** Floor count, sqft, unit count, trade mix, duration, geography, season — which dimensions must match for a baseline project to be comparable? Locked in writing with the pilot GC at kickoff.
+15b. **Definition of "coordination-related unexpected expense."** Need a written taxonomy with the pilot GC: which change orders count? Which RFIs count? Which rework events count? Edge cases (e.g., rework due to a city-mandated design change vs. rework due to revision drift) must be classified up front, not argued at pilot end.
+15c. **Realism of the GC-ROI targets.** Are 8% schedule / 25% remarks / 30% expense reductions realistic on a first pilot, or aspirational? Industry benchmark research and a pilot-GC sanity check needed before quoting them externally.
+15d. **GC participation in measurement.** The lagging GC outcomes can only be measured if the GC's office tracks them. Will the pilot GC commit to (a) sharing baseline numbers, (b) tracking the same numbers on the pilot project in a comparable way, and (c) sharing the result openly? If not, the ROI case is unprovable.
 16. **3D viewer urgency.** Is the absence of 3D a deal-breaker for any prospective pilot? If yes, scope shifts.
 17. **Comment migration on revision.** When an anchor layer changes, "needs review" is the MVP behavior. Should we attempt automated re-anchoring (nearest-coordinate) post-MVP, or keep it explicit forever?
 18. **Project size at pilot.** Mid-rise residential 5–15 floors is the target; what's the typical pilot project at the upper end (e.g., 15-floor, 8 disciplines, hundreds of layers)? Affects the v0.1 scale target.
@@ -351,6 +395,9 @@ The following materially affect scope, design, or success metrics and need answe
 - `AuditLog` (append-only event stream)
 - `Attachment` (S3 object reference; signed-URL served)
 - `UserActivity` (User × Project × lastSeenAt) — drives the **What's changed since last visit** home view
+- `ProjectBaseline` (Project × baseline_schedule_days × baseline_remarks_count × baseline_coordination_expense_total × baseline_project_reference × agreed_at) — the GC's reported metrics from their most-recent-comparable project, captured in writing at pilot kickoff. Drives the GC ROI computation.
+- `ProjectOutcome` (Project × actual_schedule_days × actual_remarks_count × actual_coordination_expense_total × computed_at) — the same three metrics for the current project at substantial completion. Reported by the GC; deltas against `ProjectBaseline` give the GC ROI numbers.
+- `ProxyMetric` (Project × metric_name × computed_value × window_start × window_end) — in-product leading indicators: revision-to-acknowledgment time, comment-resolution time, unresolved-comment count, badge-resolution rate. Computed continuously during the pilot.
 
 ### Likely screens / surfaces
 
