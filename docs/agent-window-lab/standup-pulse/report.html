@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Standup Pulse — Weekly Report</title>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --surface: #1a222d;
+      --border: #2a3544;
+      --text: #e8eef5;
+      --muted: #8b9aad;
+      --accent: #3d9cf0;
+      --accent-soft: rgba(61, 156, 240, 0.15);
+      --positive: #4ade80;
+      --warning: #fbbf24;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      font-size: 15px;
+      line-height: 1.55;
+      color: var(--text);
+      background: var(--bg);
+      min-height: 100vh;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .wrap {
+      max-width: 880px;
+      margin: 0 auto;
+      padding: 2rem 1.25rem 3rem;
+    }
+
+    header {
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    header h1 {
+      margin: 0 0 0.35rem;
+      font-size: 1.65rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .subtitle {
+      color: var(--muted);
+      margin: 0;
+      font-size: 0.95rem;
+    }
+    .nav-inline {
+      margin-top: 1rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+    .nav-inline a {
+      display: inline-block;
+      padding: 0.4rem 0.75rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.875rem;
+    }
+    .nav-inline a:hover {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+      text-decoration: none;
+    }
+    .nav-inline a.current {
+      color: var(--text);
+      border-color: var(--accent);
+      background: var(--accent-soft);
+      font-weight: 600;
+    }
+
+    section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.25rem 1.35rem;
+      margin-bottom: 1.25rem;
+    }
+    section h2 {
+      margin: 0 0 1rem;
+      font-size: 1.05rem;
+      font-weight: 650;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+    }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+    .metric {
+      padding: 0.75rem 0;
+    }
+    .metric-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 0.4rem;
+      font-size: 0.9rem;
+    }
+    .metric-label span:first-child { color: var(--muted); }
+    .metric-value { font-weight: 700; font-variant-numeric: tabular-nums; }
+    .bar-track {
+      height: 8px;
+      background: var(--bg);
+      border-radius: 4px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .bar-fill {
+      height: 100%;
+      border-radius: 3px;
+      background: linear-gradient(90deg, var(--accent), #6bb8f5);
+      min-width: 4px;
+    }
+    .metric-note {
+      margin: 0.35rem 0 0;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    ul {
+      margin: 0;
+      padding-left: 1.15rem;
+    }
+    li { margin-bottom: 0.5rem; }
+    li:last-child { margin-bottom: 0; }
+
+    .highlight-card {
+      border-left: 3px solid var(--positive);
+      padding-left: 0.85rem;
+      margin-bottom: 0.85rem;
+    }
+    .highlight-card:last-child { margin-bottom: 0; }
+    .highlight-card strong { color: var(--positive); }
+
+    .blocker-item {
+      display: flex;
+      gap: 0.65rem;
+      align-items: flex-start;
+      margin-bottom: 0.65rem;
+    }
+    .blocker-item:last-child { margin-bottom: 0; }
+    .check {
+      flex-shrink: 0;
+      width: 1.25rem;
+      height: 1.25rem;
+      border-radius: 4px;
+      background: rgba(74, 222, 128, 0.2);
+      color: var(--positive);
+      display: grid;
+      place-items: center;
+      font-size: 0.75rem;
+      font-weight: bold;
+      margin-top: 0.15rem;
+    }
+
+    .actions ol {
+      margin: 0;
+      padding-left: 1.25rem;
+      counter-reset: act;
+    }
+    .actions li {
+      margin-bottom: 0.65rem;
+      padding-left: 0.25rem;
+    }
+    .actions li:last-child { margin-bottom: 0; }
+
+    footer {
+      margin-top: 2rem;
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Standup Pulse</h1>
+      <p class="subtitle">Weekly report · May 12–16, 2026</p>
+      <nav class="nav-inline" aria-label="Lab navigation">
+        <a href="home.html">Home</a>
+        <a href="board.html">Board</a>
+        <a href="report.html" class="current" aria-current="page">Report</a>
+      </nav>
+    </header>
+
+    <section aria-labelledby="metrics-heading">
+      <h2 id="metrics-heading">Simple metrics</h2>
+      <div class="metrics-grid">
+        <div class="metric">
+          <div class="metric-label">
+            <span>Participation</span>
+            <span class="metric-value">94%</span>
+          </div>
+          <div class="bar-track" role="img" aria-label="Participation 94 percent">
+            <div class="bar-fill" style="width: 94%;"></div>
+          </div>
+          <p class="metric-note">17 of 18 teammates checked in on time.</p>
+        </div>
+        <div class="metric">
+          <div class="metric-label">
+            <span>Standup streak (team)</span>
+            <span class="metric-value">12 days</span>
+          </div>
+          <div class="bar-track" role="img" aria-label="Streak 12 of 14 days shown">
+            <div class="bar-fill" style="width: 86%;"></div>
+          </div>
+          <p class="metric-note">Target: 14-day rolling window; 86% of days green.</p>
+        </div>
+        <div class="metric">
+          <div class="metric-label">
+            <span>Async updates</span>
+            <span class="metric-value">78%</span>
+          </div>
+          <div class="bar-track" role="img" aria-label="Async updates 78 percent">
+            <div class="bar-fill" style="width: 78%;"></div>
+          </div>
+          <p class="metric-note">Written updates before the live slot.</p>
+        </div>
+      </div>
+    </section>
+
+    <section aria-labelledby="highlights-heading">
+      <h2 id="highlights-heading">Team highlights</h2>
+      <div class="highlight-card">
+        <strong>Ship:</strong> Cut incident response time in half after documenting the new runbook during Friday’s retro.
+      </div>
+      <div class="highlight-card">
+        <strong>Collaboration:</strong> Design and backend paired on the auth edge cases—no thrash in review.
+      </div>
+      <div class="highlight-card">
+        <strong>Ritual:</strong> Standups stayed under 12 minutes on average; optional deep-dives moved to a separate thread.
+      </div>
+    </section>
+
+    <section aria-labelledby="blockers-heading">
+      <h2 id="blockers-heading">Blockers resolved</h2>
+      <div class="blocker-item">
+        <span class="check" aria-hidden="true">✓</span>
+        <div>Unblocked API rate limits by switching the staging key and confirming quotas with platform.</div>
+      </div>
+      <div class="blocker-item">
+        <span class="check" aria-hidden="true">✓</span>
+        <div>CI flake on the e2e job—root cause was a race in teardown; stabilize PR merged Wednesday.</div>
+      </div>
+      <div class="blocker-item">
+        <span class="check" aria-hidden="true">✓</span>
+        <div>Designer availability gap covered by rotating a “draft review” buddy from the engineering bench.</div>
+      </div>
+    </section>
+
+    <section class="actions" aria-labelledby="actions-heading">
+      <h2 id="actions-heading">Next actions</h2>
+      <ol>
+        <li>Publish the Standup Pulse template in the shared doc so new pods can reuse the format.</li>
+        <li>Track “silent days” separately from PTO—one owner, due next Monday.</li>
+        <li>Try a lighter Tuesday async prompt to lift mid-week participation from the current baseline.</li>
+      </ol>
+    </section>
+
+    <footer>Standup Pulse · Lab preview · Invented figures for layout demo</footer>
+  </div>
+</body>
+</html>

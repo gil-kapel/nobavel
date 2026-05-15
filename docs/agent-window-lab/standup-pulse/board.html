@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Standup Pulse · Daily Board</title>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --surface: #1a2332;
+      --surface-hover: #222d3f;
+      --border: #2d3a4f;
+      --text: #e8eef7;
+      --muted: #8b9cb3;
+      --accent-today: #3d8bfd;
+      --accent-blockers: #f59e0b;
+      --accent-done: #34d399;
+      --radius: 12px;
+      --shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      background-image:
+        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(61, 139, 253, 0.12), transparent),
+        radial-gradient(ellipse 60% 40% at 100% 50%, rgba(52, 211, 153, 0.06), transparent);
+      color: var(--text);
+      line-height: 1.45;
+    }
+
+    .shell {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1.5rem 1.25rem 3rem;
+    }
+
+    header.top {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1.75rem;
+    }
+
+    .brand {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .brand p {
+      margin: 0;
+      font-size: 0.875rem;
+      color: var(--muted);
+    }
+
+    nav.lab {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    nav.lab a {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.45rem 0.85rem;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      color: var(--muted);
+      text-decoration: none;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--surface);
+      transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+    }
+
+    nav.lab a:hover {
+      color: var(--text);
+      border-color: var(--muted);
+      background: var(--surface-hover);
+    }
+
+    nav.lab a.current {
+      color: var(--accent-today);
+      border-color: rgba(61, 139, 253, 0.45);
+      pointer-events: none;
+    }
+
+    .meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      align-items: center;
+      margin-bottom: 1.25rem;
+      font-size: 0.8125rem;
+      color: var(--muted);
+    }
+
+    .meta-row time {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .pill {
+      padding: 0.2rem 0.55rem;
+      border-radius: 6px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+    }
+
+    .board {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      align-items: start;
+    }
+
+    @media (max-width: 900px) {
+      .board {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .column {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      min-height: 280px;
+    }
+
+    .column-head {
+      padding: 0.85rem 1rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+    }
+
+    .column-head h2 {
+      margin: 0;
+      font-size: 0.9375rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .column-head .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .column.today .dot { background: var(--accent-today); box-shadow: 0 0 12px rgba(61, 139, 253, 0.5); }
+    .column.blockers .dot { background: var(--accent-blockers); box-shadow: 0 0 12px rgba(245, 158, 11, 0.45); }
+    .column.done .dot { background: var(--accent-done); box-shadow: 0 0 12px rgba(52, 211, 153, 0.45); }
+
+    .count {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--muted);
+      background: var(--bg);
+      padding: 0.2rem 0.5rem;
+      border-radius: 6px;
+    }
+
+    .cards {
+      padding: 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+    }
+
+    .card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.75rem 0.85rem;
+      transition: border-color 0.15s ease, transform 0.12s ease;
+    }
+
+    .card:hover {
+      border-color: rgba(139, 156, 179, 0.45);
+      transform: translateY(-1px);
+    }
+
+    .card header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      margin-bottom: 0.45rem;
+    }
+
+    .card .name {
+      font-size: 0.8125rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .card .role {
+      font-size: 0.6875rem;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .card p {
+      margin: 0;
+      font-size: 0.8125rem;
+      color: #b8c5d6;
+    }
+
+    .column.blockers .card {
+      border-left: 3px solid var(--accent-blockers);
+    }
+
+    footer.note {
+      margin-top: 2rem;
+      text-align: center;
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="top">
+      <div class="brand">
+        <h1>Standup Pulse</h1>
+        <p>Daily board — Today, blockers, and shipped work.</p>
+      </div>
+      <nav class="lab" aria-label="Lab navigation">
+        <a href="home.html">Home</a>
+        <a href="board.html" class="current" aria-current="page">Board</a>
+        <a href="report.html">Report</a>
+      </nav>
+    </header>
+
+    <div class="meta-row">
+      <time datetime="2026-05-15">Friday, May 15, 2026</time>
+      <span class="pill">Team: Platform &amp; Experience</span>
+      <span class="pill">Async standup · 9:30 PT</span>
+    </div>
+
+    <div class="board" role="list" aria-label="Standup columns">
+      <section class="column today" aria-labelledby="col-today">
+        <div class="column-head">
+          <h2 id="col-today"><span class="dot" aria-hidden="true"></span> Today</h2>
+          <span class="count">4</span>
+        </div>
+        <div class="cards">
+          <article class="card">
+            <header>
+              <span class="name">Maya Okonkwo</span>
+              <span class="role">Backend</span>
+            </header>
+            <p>Finishing the Redis cache invalidation for org-scoped feature flags, then pairing with Priya on the migration dry-run.</p>
+          </article>
+          <article class="card">
+            <header>
+              <span class="name">Jordan Lee</span>
+              <span class="role">Frontend</span>
+            </header>
+            <p>Polishing the agent window empty state and fixing a focus trap in the command palette modal.</p>
+          </article>
+          <article class="card">
+            <header>
+              <span class="name">Sam Rivera</span>
+              <span class="role">DevOps</span>
+            </header>
+            <p>Rolling out the preview env budget alerts in Datadog and documenting the rollback for the new ingress rules.</p>
+          </article>
+          <article class="card">
+            <header>
+              <span class="name">Aisha Patel</span>
+              <span class="role">Product design</span>
+            </header>
+            <p>Usability review of the standup pulse flow with three internal pilot groups; consolidating feedback for v2 layout.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="column blockers" aria-labelledby="col-blockers">
+        <div class="column-head">
+          <h2 id="col-blockers"><span class="dot" aria-hidden="true"></span> Blockers</h2>
+          <span class="count">2</span>
+        </div>
+        <div class="cards">
+          <article class="card">
+            <header>
+              <span class="name">Chris Nguyen</span>
+              <span class="role">Full-stack</span>
+            </header>
+            <p>Waiting on security sign-off for the new OAuth scope in staging; can’t merge the PR until Tuesday’s review window.</p>
+          </article>
+          <article class="card">
+            <header>
+              <span class="name">Elena Volkov</span>
+              <span class="role">Data</span>
+            </header>
+            <p>Warehouse sync job failed overnight (timeout on the events table); rerunning with a smaller batch after infra bumps the slot.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="column done" aria-labelledby="col-done">
+        <div class="column-head">
+          <h2 id="col-done"><span class="dot" aria-hidden="true"></span> Done</h2>
+          <span class="count">3</span>
+        </div>
+        <div class="cards">
+          <article class="card">
+            <header>
+              <span class="name">Priya Desai</span>
+              <span class="role">Backend</span>
+            </header>
+            <p>Shipped idempotent webhooks for workspace billing; added integration tests and updated the runbook.</p>
+          </article>
+          <article class="card">
+            <header>
+              <span class="name">Marcus Webb</span>
+              <span class="role">Mobile</span>
+            </header>
+            <p>Released build 2.4.1 with the crash fix for background sync; monitoring crash-free sessions in the dashboard.</p>
+          </article>
+          <article class="card">
+            <header>
+              <span class="name">Riley Chen</span>
+              <span class="role">QA</span>
+            </header>
+            <p>Closed the regression suite for the editor toolbar; all P0 cases green on Chrome and Safari.</p>
+          </article>
+        </div>
+      </section>
+    </div>
+
+    <footer class="note">
+      Standup Pulse lab · static preview · no external assets
+    </footer>
+  </div>
+</body>
+</html>

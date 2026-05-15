@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Standup Pulse — Tiny team standups, daily clarity</title>
+    <style>
+      :root {
+        --bg0: #0c1020;
+        --bg1: #121833;
+        --panel: rgba(255, 255, 255, 0.06);
+        --panel-strong: rgba(255, 255, 255, 0.1);
+        --border: rgba(255, 255, 255, 0.12);
+        --text: #e8ecff;
+        --muted: #9aa3c4;
+        --accent: #6ee7b7;
+        --accent2: #7c9cff;
+        --warn: #fbbf24;
+        --shadow: 0 22px 60px rgba(0, 0, 0, 0.45);
+        --radius: 18px;
+        --max: 1080px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        height: 100%;
+      }
+
+      body {
+        margin: 0;
+        font-family:
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          Segoe UI,
+          Roboto,
+          Helvetica,
+          Arial,
+          "Apple Color Emoji",
+          "Segoe UI Emoji";
+        color: var(--text);
+        background-color: var(--bg0);
+        background-image:
+          radial-gradient(
+            1200px circle at 10% -10%,
+            rgba(124, 156, 255, 0.35),
+            transparent 55%
+          ),
+          radial-gradient(
+            900px circle at 90% 10%,
+            rgba(110, 231, 183, 0.28),
+            transparent 50%
+          ),
+          radial-gradient(
+            800px circle at 50% 110%,
+            rgba(251, 191, 36, 0.12),
+            transparent 55%
+          ),
+          linear-gradient(180deg, var(--bg1), var(--bg0));
+        line-height: 1.55;
+        letter-spacing: 0.01em;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      .wrap {
+        max-width: var(--max);
+        margin: 0 auto;
+        padding: 28px 20px 64px;
+      }
+
+      header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 10px 0 26px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .lab-nav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        padding: 18px 0 0;
+        margin: 0;
+      }
+
+      .lab-nav a {
+        display: inline-flex;
+        align-items: center;
+        padding: 8px 14px;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--muted);
+        text-decoration: none;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.04);
+        transition:
+          color 0.15s ease,
+          border-color 0.15s ease,
+          background 0.15s ease;
+      }
+
+      .lab-nav a:hover {
+        color: var(--text);
+        border-color: rgba(255, 255, 255, 0.22);
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      .lab-nav a.current {
+        color: var(--accent);
+        border-color: rgba(110, 231, 183, 0.45);
+        background: rgba(110, 231, 183, 0.1);
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+      }
+
+      .mark {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        background:
+          radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.35), transparent 52%),
+          linear-gradient(135deg, rgba(124, 156, 255, 0.95), rgba(110, 231, 183, 0.95));
+        box-shadow:
+          inset 0 0 0 1px rgba(255, 255, 255, 0.18),
+          0 14px 30px rgba(0, 0, 0, 0.35);
+        flex: 0 0 auto;
+      }
+
+      .brand h1 {
+        font-size: 15px;
+        margin: 0;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .brand p {
+        margin: 2px 0 0;
+        font-size: 13px;
+        color: var(--muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .pill-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: flex-end;
+      }
+
+      .pill {
+        font-size: 12px;
+        padding: 8px 10px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.04);
+        color: var(--muted);
+      }
+
+      .pill strong {
+        color: var(--text);
+        font-weight: 600;
+      }
+
+      .hero {
+        padding: 44px 0 14px;
+        display: grid;
+        grid-template-columns: 1.15fr 0.85fr;
+        gap: 28px;
+        align-items: start;
+      }
+
+      @media (max-width: 900px) {
+        .hero {
+          grid-template-columns: 1fr;
+          padding-top: 30px;
+        }
+        header {
+          flex-direction: column;
+          align-items: stretch;
+        }
+        .pill-row {
+          justify-content: flex-start;
+        }
+      }
+
+      .hero h2 {
+        font-size: clamp(34px, 4.8vw, 54px);
+        line-height: 1.06;
+        margin: 12px 0 14px;
+        letter-spacing: -0.02em;
+      }
+
+      .lead {
+        font-size: 18px;
+        color: var(--muted);
+        margin: 0 0 18px;
+      }
+
+      .hero ul {
+        list-style: none;
+        padding: 0;
+        margin: 18px 0 0;
+        display: grid;
+        gap: 12px;
+      }
+
+      .hero li {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+        padding: 14px 14px;
+        border-radius: 14px;
+        border: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.03);
+      }
+
+      .dot {
+        width: 10px;
+        height: 10px;
+        margin-top: 6px;
+        border-radius: 999px;
+        flex: 0 0 auto;
+        background: var(--accent);
+        box-shadow: 0 0 0 4px rgba(110, 231, 183, 0.12);
+      }
+
+      .dot.amber {
+        background: var(--warn);
+        box-shadow: 0 0 0 4px rgba(251, 191, 36, 0.12);
+      }
+
+      .dot.blue {
+        background: var(--accent2);
+        box-shadow: 0 0 0 4px rgba(124, 156, 255, 0.12);
+      }
+
+      .li-title {
+        font-weight: 650;
+        margin: 0 0 4px;
+      }
+
+      .li-sub {
+        margin: 0;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .preview {
+        border-radius: var(--radius);
+        border: 1px solid var(--border);
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.03));
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        position: relative;
+      }
+
+      .preview::before {
+        content: "";
+        position: absolute;
+        inset: -2px;
+        background:
+          radial-gradient(440px circle at 30% 0%, rgba(124, 156, 255, 0.28), transparent 55%),
+          radial-gradient(420px circle at 90% 30%, rgba(110, 231, 183, 0.22), transparent 55%);
+        filter: blur(18px);
+        opacity: 0.75;
+        pointer-events: none;
+      }
+
+      .preview-inner {
+        position: relative;
+        padding: 16px;
+      }
+
+      .windowbar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 8px 14px;
+      }
+
+      .traffic {
+        display: flex;
+        gap: 7px;
+      }
+
+      .traffic span {
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.16);
+      }
+
+      .traffic span:first-child {
+        background: rgba(255, 99, 99, 0.55);
+      }
+      .traffic span:nth-child(2) {
+        background: rgba(251, 191, 36, 0.55);
+      }
+      .traffic span:nth-child(3) {
+        background: rgba(110, 231, 183, 0.55);
+      }
+
+      .titlechip {
+        margin-left: 8px;
+        font-size: 12px;
+        color: var(--muted);
+        padding: 6px 10px;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: rgba(0, 0, 0, 0.15);
+      }
+
+      .desk {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+
+      @media (max-width: 520px) {
+        .desk {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .cardish {
+        border-radius: 14px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: rgba(0, 0, 0, 0.18);
+        padding: 12px;
+        min-height: 120px;
+      }
+
+      .cardish h3 {
+        margin: 0 0 10px;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: rgba(232, 236, 255, 0.75);
+      }
+
+      .line {
+        height: 10px;
+        border-radius: 999px;
+        margin: 9px 0;
+        background: rgba(255, 255, 255, 0.08);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .line::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        width: 55%;
+        border-radius: 999px;
+        background: linear-gradient(90deg, rgba(124, 156, 255, 0.15), rgba(110, 231, 183, 0.55));
+      }
+
+      .line.short::after {
+        width: 38%;
+      }
+
+      .line.mid::after {
+        width: 62%;
+        background: linear-gradient(90deg, rgba(251, 191, 36, 0.15), rgba(251, 191, 36, 0.55));
+      }
+
+      .tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        color: var(--muted);
+        margin-top: 10px;
+      }
+
+      .tag b {
+        color: rgba(232, 236, 255, 0.88);
+      }
+
+      .section {
+        margin-top: 34px;
+        padding-top: 28px;
+        border-top: 1px solid var(--border);
+      }
+
+      .section-head {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+        margin-bottom: 14px;
+      }
+
+      .section-head h3 {
+        margin: 0;
+        font-size: 22px;
+        letter-spacing: -0.01em;
+      }
+
+      .section-head p {
+        margin: 0;
+        color: var(--muted);
+        max-width: 58ch;
+      }
+
+      .grid2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin-top: 16px;
+      }
+
+      @media (max-width: 820px) {
+        .grid2 {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .cta {
+        border-radius: var(--radius);
+        border: 1px solid var(--border);
+        background:
+          radial-gradient(600px circle at 20% 0%, rgba(124, 156, 255, 0.18), transparent 55%),
+          radial-gradient(500px circle at 90% 40%, rgba(110, 231, 183, 0.14), transparent 55%),
+          rgba(255, 255, 255, 0.04);
+        box-shadow: var(--shadow);
+        padding: 18px 18px 16px;
+        display: grid;
+        gap: 12px;
+        transition: transform 140ms ease, border-color 140ms ease;
+      }
+
+      .cta:hover {
+        transform: translateY(-2px);
+        border-color: rgba(255, 255, 255, 0.22);
+      }
+
+      .cta:focus-within {
+        outline: 2px solid rgba(124, 156, 255, 0.55);
+        outline-offset: 3px;
+      }
+
+      .cta-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .cta-title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+      }
+
+      .icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 14px;
+        display: grid;
+        place-items: center;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        background: rgba(0, 0, 0, 0.2);
+        flex: 0 0 auto;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+      }
+
+      .icon.board {
+        color: rgba(232, 236, 255, 0.95);
+      }
+
+      .icon.report {
+        color: rgba(232, 236, 255, 0.95);
+      }
+
+      .cta h4 {
+        margin: 0;
+        font-size: 18px;
+        letter-spacing: -0.01em;
+      }
+
+      .cta p {
+        margin: 4px 0 0;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .go {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 10px 12px;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        background: rgba(0, 0, 0, 0.16);
+        color: rgba(232, 236, 255, 0.92);
+        font-weight: 650;
+        font-size: 13px;
+        white-space: nowrap;
+      }
+
+      .cta-body {
+        color: rgba(232, 236, 255, 0.78);
+        font-size: 14px;
+        line-height: 1.55;
+        margin: 0;
+      }
+
+      .footer {
+        margin-top: 40px;
+        padding-top: 18px;
+        border-top: 1px dashed rgba(255, 255, 255, 0.14);
+        color: var(--muted);
+        font-size: 13px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+          "Courier New", monospace;
+        font-size: 0.95em;
+        color: rgba(232, 236, 255, 0.86);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <div class="brand" aria-label="Standup Pulse product">
+          <div class="mark" aria-hidden="true"></div>
+          <div>
+            <h1>Standup Pulse</h1>
+            <p>Tiny team standups that stay honest, fast, and useful.</p>
+          </div>
+        </div>
+        <div class="pill-row" aria-label="Product highlights">
+          <div class="pill"><strong>2 minutes</strong> to scan</div>
+          <div class="pill"><strong>Async-first</strong> cadence</div>
+          <div class="pill"><strong>Weekly</strong> narrative</div>
+        </div>
+      </header>
+
+      <nav class="lab-nav" aria-label="Lab pages">
+        <a href="home.html" class="current" aria-current="page">Home</a>
+        <a href="board.html">Board</a>
+        <a href="report.html">Report</a>
+      </nav>
+
+      <section class="hero" aria-labelledby="hero-title">
+        <div>
+          <p class="lead" id="hero-title">
+            A lightweight ritual for small teams: capture today’s focus, surface blockers early, and
+            roll the week into a crisp story—without another heavyweight tool.
+          </p>
+          <h2>Clarity for the day. Context for the week.</h2>
+          <ul>
+            <li>
+              <span class="dot" aria-hidden="true"></span>
+              <div>
+                <p class="li-title">Replace ramble with signal</p>
+                <p class="li-sub">
+                  Short prompts keep updates comparable day-to-day, so patterns (and risks) stand out
+                  immediately.
+                </p>
+              </div>
+            </li>
+            <li>
+              <span class="dot blue" aria-hidden="true"></span>
+              <div>
+                <p class="li-title">A board for the daily pulse</p>
+                <p class="li-sub">
+                  See who’s doing what right now—ideal for standup time or a mid-day async check-in.
+                </p>
+              </div>
+            </li>
+            <li>
+              <span class="dot amber" aria-hidden="true"></span>
+              <div>
+                <p class="li-title">A report for the weekly arc</p>
+                <p class="li-sub">
+                  Turn scattered updates into a narrative stakeholders can actually read—not a backlog
+                  of chat logs.
+                </p>
+              </div>
+            </li>
+          </ul>
+        </div>
+
+        <aside class="preview" aria-label="Conceptual preview of Standup Pulse">
+          <div class="preview-inner">
+            <div class="windowbar">
+              <div class="traffic" aria-hidden="true"><span></span><span></span><span></span></div>
+              <div class="titlechip">standup‑pulse.lab</div>
+            </div>
+            <div class="desk">
+              <div class="cardish">
+                <h3>Today</h3>
+                <div class="line"></div>
+                <div class="line short"></div>
+                <div class="line mid"></div>
+                <div class="tag"><b>3</b> updates · <b>1</b> blocker</div>
+              </div>
+              <div class="cardish">
+                <h3>This week</h3>
+                <div class="line mid"></div>
+                <div class="line"></div>
+                <div class="line short"></div>
+                <div class="tag">Theme: ship · <b>confidence ↑</b></div>
+              </div>
+            </div>
+            <p class="tag" style="margin-left: 2px">
+              Stylized preview — purely CSS shapes (no screenshots).
+            </p>
+          </div>
+        </aside>
+      </section>
+
+      <section class="section" aria-labelledby="flows-title">
+        <div class="section-head">
+          <div>
+            <h3 id="flows-title">Two lenses, same heartbeat</h3>
+            <p>
+              Explore the flows as static lab pages. The daily board is your operational dashboard;
+              the weekly report is your retrospective headline.
+            </p>
+          </div>
+        </div>
+
+        <div class="grid2">
+          <a class="cta" href="board.html">
+            <div class="cta-top">
+              <div class="cta-title">
+                <div class="icon board" aria-hidden="true">D</div>
+                <div>
+                  <h4>Daily Board</h4>
+                  <p>What’s moving today?</p>
+                </div>
+              </div>
+              <span class="go" aria-hidden="true">Open →</span>
+            </div>
+            <p class="cta-body">
+              Scan commitments, owners, and blockers in one glance—built for quick standups and
+              hallway-level alignment.
+            </p>
+          </a>
+
+          <a class="cta" href="report.html">
+            <div class="cta-top">
+              <div class="cta-title">
+                <div class="icon report" aria-hidden="true">W</div>
+                <div>
+                  <h4>Weekly Report</h4>
+                  <p>What did the week mean?</p>
+                </div>
+              </div>
+              <span class="go" aria-hidden="true">Open →</span>
+            </div>
+            <p class="cta-body">
+              Summarize momentum, surprises, and next bets—so leadership gets meaning, not noise.
+            </p>
+          </a>
+        </div>
+      </section>
+
+      <footer class="footer">
+        <div>Lab prototype — static HTML only (<code>home.html</code>).</div>
+        <div>No accounts, no integrations: just a crisp story for the product direction.</div>
+      </footer>
+    </div>
+  </body>
+</html>
