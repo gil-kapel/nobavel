@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chroma Drift — micro playground</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;0,9..40,700;1,9..40,500&family=JetBrains+Mono:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #07070d;
+        --panel: rgba(18, 18, 28, 0.72);
+        --panel-border: rgba(255, 255, 255, 0.08);
+        --text: #f4f5fb;
+        --muted: rgba(244, 245, 251, 0.62);
+        --accent: #7ee0ff;
+        --accent-2: #c29bff;
+        --shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+        color-scheme: dark;
+      }
+
+      :root.light {
+        --bg: #f6f4ff;
+        --panel: rgba(255, 255, 255, 0.82);
+        --panel-border: rgba(20, 12, 45, 0.08);
+        --text: #120b24;
+        --muted: rgba(18, 11, 36, 0.58);
+        --accent: #0066ff;
+        --accent-2: #8b3dff;
+        --shadow: 0 20px 60px rgba(62, 40, 120, 0.18);
+        color-scheme: light;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100dvh;
+        background: var(--bg);
+        color: var(--text);
+        font-family: "DM Sans", system-ui, sans-serif;
+        overflow: hidden;
+      }
+
+      canvas {
+        display: block;
+        width: 100vw;
+        height: 100dvh;
+        cursor: crosshair;
+      }
+
+      .hud {
+        position: fixed;
+        left: 1.25rem;
+        right: 1.25rem;
+        bottom: 1.25rem;
+        max-width: 420px;
+        margin: 0 auto;
+        padding: 1rem 1.1rem 1.05rem;
+        border-radius: 18px;
+        background: var(--panel);
+        border: 1px solid var(--panel-border);
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(18px) saturate(140%);
+        -webkit-backdrop-filter: blur(18px) saturate(140%);
+      }
+
+      .hud header {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 0.75rem;
+        margin-bottom: 0.65rem;
+      }
+
+      .hud h1 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+      }
+
+      .hud p {
+        margin: 0 0 0.85rem;
+        font-size: 0.85rem;
+        line-height: 1.45;
+        color: var(--muted);
+      }
+
+      .mono {
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 0.72rem;
+        font-weight: 600;
+        color: var(--muted);
+      }
+
+      .controls {
+        display: grid;
+        gap: 0.55rem;
+      }
+
+      label.row {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 0.25rem 0.6rem;
+        align-items: center;
+        font-size: 0.8rem;
+      }
+
+      label.row input[type="range"] {
+        grid-column: 1 / -1;
+        width: 100%;
+        accent-color: var(--accent);
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.45rem;
+        margin-top: 0.65rem;
+      }
+
+      button {
+        appearance: none;
+        border: 1px solid var(--panel-border);
+        background: linear-gradient(
+          135deg,
+          color-mix(in oklab, var(--accent) 18%, transparent),
+          color-mix(in oklab, var(--accent-2) 16%, transparent)
+        );
+        color: var(--text);
+        font: inherit;
+        font-weight: 600;
+        font-size: 0.78rem;
+        padding: 0.42rem 0.65rem;
+        border-radius: 999px;
+        cursor: pointer;
+        transition: transform 120ms ease, border-color 120ms ease;
+      }
+
+      button:hover {
+        transform: translateY(-1px);
+        border-color: color-mix(in oklab, var(--accent) 35%, var(--panel-border));
+      }
+
+      button:active {
+        transform: translateY(0);
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.2rem 0.45rem;
+        border-radius: 999px;
+        border: 1px solid var(--panel-border);
+        background: color-mix(in oklab, var(--bg) 40%, transparent);
+      }
+
+      .dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 999px;
+        background: linear-gradient(135deg, var(--accent), var(--accent-2));
+        box-shadow: 0 0 0 4px
+          color-mix(in oklab, var(--accent) 25%, transparent);
+      }
+
+      .hint {
+        margin-top: 0.55rem;
+        font-size: 0.74rem;
+        color: var(--muted);
+      }
+
+      @media (max-width: 520px) {
+        .hud {
+          left: 0.75rem;
+          right: 0.75rem;
+          bottom: 0.75rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="c" aria-hidden="true"></canvas>
+    <div class="hud" role="region" aria-label="Controls">
+      <header>
+        <h1>Chroma Drift</h1>
+        <span class="pill mono"><span class="dot" aria-hidden="true"></span>LIVE</span>
+      </header>
+      <p>
+        Move your pointer to warp the field. Tune flow + tension, shuffle the palette, flip
+        day/night. Pure static HTML — nothing to install.
+      </p>
+      <div class="controls">
+        <label class="row">
+          <span>Flow speed</span>
+          <span class="mono" id="spdVal">1.00</span>
+          <input id="speed" type="range" min="0.2" max="2.4" step="0.05" value="1" />
+        </label>
+        <label class="row">
+          <span>Pointer tension</span>
+          <span class="mono" id="tenVal">1.00</span>
+          <input id="tension" type="range" min="0" max="2.2" step="0.05" value="1" />
+        </label>
+        <label class="row">
+          <span>Bloom</span>
+          <span class="mono" id="blmVal">0.55</span>
+          <input id="bloom" type="range" min="0.2" max="0.95" step="0.01" value="0.55" />
+        </label>
+      </div>
+      <div class="actions">
+        <button type="button" id="shuffle">Shuffle palette</button>
+        <button type="button" id="theme">Toggle theme</button>
+      </div>
+      <p class="hint">
+        Tip: on phones, drag slowly — the field likes gentle gestures.
+      </p>
+    </div>
+    <script>
+      (() => {
+        const canvas = document.getElementById("c");
+        const ctx = canvas.getContext("2d", { alpha: false });
+        const dpr = Math.max(1, Math.min(2.5, window.devicePixelRatio || 1));
+
+        const speedEl = document.getElementById("speed");
+        const tensionEl = document.getElementById("tension");
+        const bloomEl = document.getElementById("bloom");
+        const spdVal = document.getElementById("spdVal");
+        const tenVal = document.getElementById("tenVal");
+        const blmVal = document.getElementById("blmVal");
+        const shuffleBtn = document.getElementById("shuffle");
+        const themeBtn = document.getElementById("theme");
+        const root = document.documentElement;
+
+        const pointer = { x: 0, y: 0, active: false, lx: 0, ly: 0 };
+
+        let t = 0;
+        let palette = makePalette();
+        let hueShift = Math.random() * Math.PI * 2;
+
+        function makePalette() {
+          const base = Math.random() * Math.PI * 2;
+          return {
+            a: base,
+            b: base + 1.9 + Math.random() * 0.8,
+            c: base + 3.7 + Math.random() * 0.6,
+          };
+        }
+
+        function resize() {
+          const w = window.innerWidth;
+          const h = window.innerHeight;
+          canvas.width = Math.floor(w * dpr);
+          canvas.height = Math.floor(h * dpr);
+          canvas.style.width = `${w}px`;
+          canvas.style.height = `${h}px`;
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        }
+
+        function syncLabels() {
+          spdVal.textContent = Number(speedEl.value).toFixed(2);
+          tenVal.textContent = Number(tensionEl.value).toFixed(2);
+          blmVal.textContent = Number(bloomEl.value).toFixed(2);
+        }
+
+        function isLight() {
+          return root.classList.contains("light");
+        }
+
+        function paintBackground(w, h) {
+          const g = ctx.createLinearGradient(0, 0, w, h);
+          if (isLight()) {
+            g.addColorStop(0, "#f3f0ff");
+            g.addColorStop(1, "#ecf6ff");
+          } else {
+            g.addColorStop(0, "#06060c");
+            g.addColorStop(1, "#0b1020");
+          }
+          ctx.fillStyle = g;
+          ctx.fillRect(0, 0, w, h);
+        }
+
+        function blobColor(i, j) {
+          const { a, b, c } = palette;
+          const phase = hueShift + i * 0.35 + j * 0.22;
+          const ch = Math.cos(phase + a) * 0.5 + 0.5;
+          const cs = Math.cos(phase * 1.3 + b) * 0.35 + 0.65;
+          const cl = Math.cos(phase * 0.8 + c) * 0.32 + 0.58;
+          if (isLight()) {
+            const r = Math.floor(40 + 170 * ch);
+            const g = Math.floor(60 + 140 * cs);
+            const b = Math.floor(120 + 110 * cl);
+            return `rgba(${r},${g},${b},`;
+          }
+          const r = Math.floor(40 + 120 * ch);
+          const g = Math.floor(30 + 110 * cs);
+          const b = Math.floor(120 + 120 * cl);
+          return `rgba(${r},${g},${b},`;
+        }
+
+        function drawFrame() {
+          const w = window.innerWidth;
+          const h = window.innerHeight;
+          paintBackground(w, h);
+          const speed = Number(speedEl.value);
+          const tension = Number(tensionEl.value);
+          const bloom = Number(bloomEl.value);
+
+          const cols = Math.round(Math.max(10, Math.min(22, w / 85)));
+          const rows = Math.round(Math.max(10, Math.min(22, h / 85)));
+          const cellW = w / cols;
+          const cellH = h / rows;
+
+          t += 0.012 * speed;
+
+          const px = pointer.active ? pointer.x : w * 0.5;
+          const py = pointer.active ? pointer.y : h * 0.45;
+          const vx = pointer.x - pointer.lx;
+          const vy = pointer.y - pointer.ly;
+          const vmag = Math.hypot(vx, vy);
+
+          for (let j = 0; j < rows; j++) {
+            for (let i = 0; i < cols; i++) {
+              const cx = (i + 0.5) * cellW;
+              const cy = (j + 0.5) * cellH;
+              const dx = cx - px;
+              const dy = cy - py;
+              const dist = Math.hypot(dx, dy) + 18;
+              const falloff = (tension * 4200) / (dist * dist);
+              const wx = (dx / dist) * falloff * 22;
+              const wy = (dy / dist) * falloff * 22;
+
+              const flow =
+                Math.sin(t * 1.1 + i * 0.42 + j * 0.33) * 14 +
+                Math.cos(t * 0.8 - i * 0.28) * 10;
+              const flowY =
+                Math.cos(t * 0.9 + j * 0.41 - i * 0.19) * 14 +
+                Math.sin(t * 0.7 + i * 0.21) * 9;
+
+              const bx = cx + wx + flow + tension * (vx / (vmag + 1)) * 3.5;
+              const by = cy + wy + flowY + tension * (vy / (vmag + 1)) * 3.5;
+
+              const rad =
+                (0.42 + 0.16 * Math.sin(t * 1.3 + i * 0.6 + j * 0.45)) *
+                Math.min(cellW, cellH) *
+                bloom;
+
+              const grad = ctx.createRadialGradient(bx, by, 0, bx, by, rad);
+              const base = blobColor(i, j);
+              grad.addColorStop(0, `${base}0.42)`);
+              grad.addColorStop(0.55, `${base}0.18)`);
+              grad.addColorStop(1, `${base}0)`);
+              ctx.fillStyle = grad;
+              ctx.beginPath();
+              ctx.arc(bx, by, rad, 0, Math.PI * 2);
+              ctx.fill();
+            }
+          }
+
+          pointer.lx = pointer.x;
+          pointer.ly = pointer.y;
+
+          requestAnimationFrame(drawFrame);
+        }
+
+        function onMove(clientX, clientY) {
+          const rect = canvas.getBoundingClientRect();
+          pointer.x = clientX - rect.left;
+          pointer.y = clientY - rect.top;
+        }
+
+        canvas.addEventListener("pointermove", (e) => {
+          pointer.active = true;
+          onMove(e.clientX, e.clientY);
+        });
+        canvas.addEventListener("pointerdown", (e) => {
+          pointer.active = true;
+          canvas.setPointerCapture(e.pointerId);
+          onMove(e.clientX, e.clientY);
+        });
+        canvas.addEventListener("pointerup", (e) => {
+          pointer.active = false;
+          try {
+            if (canvas.hasPointerCapture(e.pointerId)) {
+              canvas.releasePointerCapture(e.pointerId);
+            }
+          } catch {
+            /* ignore */
+          }
+        });
+        canvas.addEventListener("pointerleave", () => {
+          pointer.active = false;
+        });
+
+        speedEl.addEventListener("input", syncLabels);
+        tensionEl.addEventListener("input", syncLabels);
+        bloomEl.addEventListener("input", syncLabels);
+
+        shuffleBtn.addEventListener("click", () => {
+          palette = makePalette();
+          hueShift = Math.random() * Math.PI * 2;
+        });
+
+        themeBtn.addEventListener("click", () => {
+          root.classList.toggle("light");
+        });
+
+        window.addEventListener("resize", () => {
+          resize();
+        });
+
+        resize();
+        syncLabels();
+        drawFrame();
+      })();
+    </script>
